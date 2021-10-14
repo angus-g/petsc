@@ -100,6 +100,7 @@ typedef struct _p_PetscObject {
   PetscLogDouble       flops,time,mem,memchildren;
   PetscObjectId        id;
   PetscInt             refct;
+  PetscInt             cidx;
   PetscMPIInt          tag;
   PetscFunctionList    qlist;
   PetscObjectList      olist;
@@ -837,6 +838,7 @@ PETSC_EXTERN PetscMPIInt Petsc_InnerComm_keyval;
 PETSC_EXTERN PetscMPIInt Petsc_OuterComm_keyval;
 PETSC_EXTERN PetscMPIInt Petsc_Seq_keyval;
 PETSC_EXTERN PetscMPIInt Petsc_ShmComm_keyval;
+PETSC_EXTERN PetscMPIInt Petsc_CreationIdx_keyval;
 
 struct PetscCommStash {
   struct PetscCommStash *next;

@@ -84,6 +84,8 @@ class TestTSPython(unittest.TestCase):
         self.assertTrue('destroy' not in ctx.log)
         self.ts.destroy() # XXX
         self.ts = None
+        PETSc._cleanup()
+        PETSc._cleanup(PETSc.COMM_SELF)
         self.assertEqual(ctx.log['destroy'], 1)
         self.assertEqual(getrefcount(ctx),   2)
 
@@ -101,7 +103,7 @@ class TestTSPython(unittest.TestCase):
         ts.setIFunction(ode.function, f)
         ts.setIJacobian(ode.jacobian, J, J)
         ts.snes.ksp.pc.setType('none')
-        
+
         T0, dT, nT = 0.0, 0.1, 10
         T = T0 + nT*dT
         ts.setTime(T0)
@@ -115,7 +117,7 @@ class TestTSPython(unittest.TestCase):
 
         self.assertTrue(ode.function_calls > 0)
         self.assertTrue(ode.jacobian_calls > 0)
-        
+
         ctx = self.ts.getPythonContext()
         ncalls = self.nsolve * ts.step_number
         self.assertTrue(ctx.log['solveStep'] == ncalls)

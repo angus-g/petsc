@@ -98,6 +98,11 @@ class BaseTestKSPPYTHON(BaseTestKSP):
         ctx = self.ContextClass()
         self.ksp.setPythonContext(ctx)
 
+    def tearDown(self):
+        self.ksp.destroy()
+        PETSc._cleanup()
+        PETSc._cleanup(PETSc.COMM_SELF)
+
 class TestKSPPYTHON_RICH(BaseTestKSPPYTHON, unittest.TestCase):
     PC_TYPE  = PETSc.PC.Type.JACOBI
     ContextClass = MyRichardson

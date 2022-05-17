@@ -4,6 +4,7 @@
 */
 #include <petsc/private/petscimpl.h>        /*I  "petscsys.h"   I*/
 #include <petscviewer.h>
+#include <petsc/private/garbagecollector.h>
 
 #if !defined(PETSC_HAVE_WINDOWS_COMPILERS)
 #include <petsc/private/valgrind/valgrind.h>
@@ -1314,6 +1315,20 @@ PetscErrorCode  PetscFinalize(void)
   PetscFunctionBegin;
   PetscCheck(PetscInitializeCalled,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PetscInitialize() must be called before PetscFinalize()");
   PetscCall(PetscInfo(NULL,"PetscFinalize() called\n"));
+
+  /* Clean up Garbage automatically on COMM_SELF and COMM_WORLD at finalize */
+  {
+    union {MPI_Comm comm; void *ptr;} ucomm;
+    PetscMPIInt flg;
+    void        *tmp;
+
+    PetscCallMPI(MPI_Comm_get_attr(PETSC_COMM_SELF,Petsc_InnerComm_keyval,&ucomm,&flg));
+    if (flg) PetscCallMPI(MPI_Comm_get_attr(ucomm.comm,Petsc_Garbage_HMap_keyval,&tmp,&flg));
+    if (flg) PetscCall(PetscGarbageRecursiveCleanup(PETSC_COMM_SELF, 4));
+    PetscCallMPI(MPI_Comm_get_attr(PETSC_COMM_WORLD,Petsc_InnerComm_keyval,&ucomm,&flg));
+    if (flg) PetscCallMPI(MPI_Comm_get_attr(ucomm.comm,Petsc_Garbage_HMap_keyval,&tmp,&flg));
+    if (flg) PetscCall(PetscGarbageRecursiveCleanup(PETSC_COMM_WORLD, 4));
+  }
 
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 #if defined(PETSC_HAVE_ADIOS)
